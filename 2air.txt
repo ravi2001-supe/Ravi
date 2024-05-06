@@ -1,0 +1,59 @@
+import pandas as pd
+
+A=pd.read_csv("C:\\Users\\PRATHAM\\Downloads\\airquality (1).csv")
+
+A.head()
+
+A.tail()
+
+A.shape
+
+A.columns
+
+A.isnull().sum()
+
+A=A.drop(columns=['Unnamed: 0'])
+
+A['Ozone']=A['Ozone'].fillna(A['Ozone'].mean())
+
+A['Solar.R']=A['Solar.R'].fillna(A['Solar.R'].mean())
+
+A.isnull().sum()
+
+A
+
+subset1 = A.iloc[:,[0,3]]
+subset1
+
+subset2 = A.iloc[:,[2,3]]
+subset2
+
+integrated_data=pd.merge(subset1,subset2, on='Temp', how='inner')
+integrated_data
+
+from sklearn.linear_model import LinearRegression
+x=A[['Wind']]
+y=A[['Temp']]
+
+x,y
+
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2)
+
+model=LinearRegression().fit(x_train,y_train)
+model.intercept_,model.coef_
+
+y_predict=model.predict(x_test)
+print(y_predict)
+
+import matplotlib.pyplot as plt
+
+plt.scatter(x_train,y_train,color='blue',label="training data")
+plt.plot(x_test.squeeze(),y_predict, color='red',label="predictions")
+plt.legend()
+plt.xlabel("WIND")
+plt.ylabel("TEMPERATURE")
+
+from sklearn.metrics import mean_squared_error
+mse=mean_squared_error(y_test,y_predict)
+print(mse)

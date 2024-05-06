@@ -1,0 +1,121 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score,confusion_matrix
+from sklearn.linear_model import LogisticRegression
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+df = pd.read_csv("Heart.csv")
+df.head()
+
+
+df = df.drop_duplicates()
+
+df.describe()
+
+df.info()
+
+df.isna().sum()
+
+df.head()
+
+df.fbs.unique()
+
+subSet1 = df[['age','cp','chol','thalachh']]
+
+subSet2 = df[['exng','slp','output']]
+
+merged_df = subSet1.merge(right=subSet2,how='cross')
+merged_df.head()
+
+df.columns
+
+def remove_outliers(column):
+    Q1 = column.quantile(0.25)
+    Q3 = column.quantile(0.75)
+    IQR = Q3 - Q1
+    threshold = 1.5 * IQR
+    outlier_mask = (column < Q1 - threshold) | (column > Q3 + threshold)
+    return column[~outlier_mask]
+
+# Remove outliers for each column using a loop
+col_name = ['cp','thalachh','exng','oldpeak','slp','caa']
+for col in col_name:
+    df[col] = remove_outliers(df[col])
+
+plt.figure(figsize=(10, 6))  # Adjust the figure size if needed
+
+for col in col_name:
+    sns.boxplot(data=df[col])
+    plt.title(col)
+    plt.show()
+
+df = df.dropna()
+
+df.isna().sum()
+
+df = df.drop('fbs',axis=1)
+
+correlations = df.corr()['output'].drop('output')
+
+
+
+# Print correlations
+print("Correlation with the Target:")
+print(correlations)
+print()
+
+# Plot correlation heatmap
+plt.figure(figsize=(8, 6))
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+plt.title('Correlation Heatmap')
+plt.show()
+
+
+
+# splitting data using train test split
+x = df[['cp','thalachh','exng','oldpeak','slp','caa']]
+y = df.output
+x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2,random_state=0)
+
+x_train.shape,x_test.shape,y_train.shape,y_test.shape
+
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+x_train_scaled = scaler.fit_transform(x_train)
+x_test_scaled = scaler.transform(x_test)
+
+y_train= np.array(y_train).reshape(-1, 1)
+y_test= np.array(y_test).reshape(-1, 1)
+
+
+
+model = LogisticRegression()
+model.fit(x_train_scaled, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(x_test_scaled)
+
+# Evaluate the model's accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+
+
+from sklearn.tree import DecisionTreeClassifier
+tc=DecisionTreeClassifier(criterion='entropy')
+tc.fit(x_train_scaled,y_train)
+y_pred=tc.predict(x_test_scaled)
+
+print("Training Accuracy Score :",accuracy_score(y_pred,y_test))
+print("Training Confusion Matrix  :",confusion_matrix(y_pred,y_test))
+
+

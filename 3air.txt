@@ -1,0 +1,91 @@
+import pandas as pd
+
+A1=pd.read_csv(r"/content/airquality.csv")
+
+A1
+
+A.head()
+
+A.tail()
+
+A.shape
+
+A1.isnull().sum()
+
+#remove null values from Airquality dataset
+OzoneMean=A1['Ozone'].mean()
+OzoneMean
+SolarMean=A1['Solar.R'].mean()
+SolarMean
+
+import numpy as np
+
+A1['Ozone']=A1['Ozone'].replace(np.NaN ,OzoneMean)
+A1['Solar.R']=A1['Solar.R'].replace(np.NaN ,SolarMean)
+
+A1.isnull().sum()
+
+HumidityMode=A1['Humidity'].mode()
+HumidityMode
+
+A1['Humidity'].replace({np.NaN: 'HumidityMode' },inplace=True)
+A1['Humidity'].unique()
+
+A1['Humidity'].isnull().sum()
+
+import matplotlib.pyplot as plt
+
+plt.scatter(A1['Ozone'],A1['Temp'],color='red')
+plt.xlabel('Ozone')
+plt.ylabel('Temp')
+plt.title('Ozone VS Temperature')
+
+labels=['Ozone','Solar.R','Wind','Temp']
+sizes=[A1['Ozone'].mean(),A1['Solar.R'].mean(),A1['Wind'].mean(),A1['Temp'].mean()]
+colors=['red','green','yellow','pink']
+plt.pie(sizes,  labels=labels, colors=colors ,autopct='%1.1f%%', shadow=True, startangle=140)
+plt.title('PieChart')
+
+x=A1.iloc[:,-4]
+plt.hist(x,bins="auto")
+plt.title("histogram")
+
+ozone = A1.iloc[1:16,0]
+temp = A1.iloc[1:16,3]
+plt.plot(ozone,label='ozone')
+plt.plot(temp,label='temp')
+plt.legend()
+plt.ylabel("range over 15 days")
+plt.xlabel(" days in may")
+
+b=A1.iloc[:21,3]
+y=np.arange(len(b))
+v=range(0,21)
+plt.bar(y,b,align='center',alpha=0.5)
+plt.xticks(y,v)
+plt.ylabel('Temperature')
+plt.xlabel('Days')
+plt.title('Temperature for 1st-20th May ')
+
+import seaborn as sns
+
+sns.set(style="ticks")
+sns.pairplot(A1)
+
+A1new=A1.iloc[1:30,1:6]
+ax=sns.heatmap(A1new)
+plt.show()
+
+pip install wordcloud
+
+from wordcloud import WordCloud
+
+with open(r"/content/ravi.txt" ,'r', encoding='utf-8') as file:
+    text = file.read()
+
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
