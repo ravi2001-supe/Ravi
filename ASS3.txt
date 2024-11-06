@@ -14,7 +14,8 @@ from tensorflow.keras.datasets import mnist
 
 print(X_train.shape)
 
-X_train[0].min(), X_train[0].max()X_train = (X_train - 0.0) / (255.0 - 0.0)
+X_train[0].min(), X_train[0].max()
+X_train = (X_train - 0.0) / (255.0 - 0.0)
 X_test = (X_test - 0.0) / (255.0 - 0.0)
 X_train[0].min(), X_train[0].max()
 
