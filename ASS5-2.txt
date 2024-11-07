@@ -1,0 +1,103 @@
+import numpy as np
+import re
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Embedding, Lambda
+from tensorflow.keras.preprocessing.text import Tokenizer
+
+data ="In the fast-evolving era of artificial intelligence, Deep Learning stands as a cornerstone technology, revolutionizing how machines understand, learn, and interact with complex data. At its essence, Deep Learning AI mimics the intricate neural networks of the human brain, enabling computers to autonomously discover patterns and make decisions from vast amounts of unstructured data. This transformative field has propelled breakthroughs across various domains, from computer vision and natural language processing to healthcare diagnostics and autonomous driving."
+
+  
+sentences = data.split('.')
+sentences = [sentence for sentence in sentences if sentence.strip()]
+
+
+clean_sent = []
+for sentence in sentences:
+    sentence = re.sub('[^A-Za-z0-9]+', ' ', sentence)
+    sentence = re.sub(r'(?:^| )\\w (?:$| )', ' ', sentence).strip()
+    sentence = sentence.lower()
+    clean_sent.append(sentence)
+
+
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(clean_sent)
+sequences = tokenizer.texts_to_sequences(clean_sent)
+
+index_to_word = {}
+word_to_index = {}
+
+
+for i, sequence in enumerate(sequences):
+    word_in_sentence = clean_sent[i].split()
+    for j, value in enumerate(sequence):
+        index_to_word[value] = word_in_sentence[j]
+        word_to_index[word_in_sentence[j]] = value
+
+vocab_size = len(tokenizer.word_index) + 1
+emb_size = 100 
+context_size = 2
+
+
+contexts = []
+targets = []
+
+for sequence in sequences:
+    for i in range(1, len(sequence) - 1):
+        if i - context_size >= 0 and i + context_size < len(sequence):
+            target = sequence[i]
+            context = [sequence[i - context_size], sequence[i + context_size]]
+            contexts.append(context)
+            targets.append(target)
+
+
+X = np.array(contexts)
+Y = np.array(targets)
+
+
+model = Sequential([
+    Embedding(input_dim=vocab_size, output_dim=emb_size),  # Removed input_length
+    Lambda(lambda x: tf.reduce_mean(x, axis=1)),
+    Dense(256, activation='relu'),
+    Dense(vocab_size, activation='softmax')
+])
+
+
+model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+
+history = model.fit(X, Y, epochs=100, batch_size=32)
+
+
+embeddings = model.get_weights()[0]
+
+
+import matplotlib.pyplot as plt
+plt.scatter(reduced_embeddings[:, 0], reduced_embeddings[:, 1])
+for i, word in enumerate(index_to_word.values()):
+    plt.annotate(word, (reduced_embeddings[i, 0], reduced_embeddings[i, 1]))
+plt.show()
+
+
+test_sentences = [
+    "fast-evolving  artificial intelligence",
+    "revolutionizing  machines understand",
+    "networks of the  brain",
+    " computer vision and natural language"
+]
+
+for sent in test_sentences:
+    test_words = sent.split(" ")
+    x_test = []
+    for i in test_words:
+        # Add a default index for unknown words (e.g., 0 for unknown)
+        word_index = word_to_index.get(i, 0)
+        x_test.append(word_index)
+    
+    # Convert the list to a NumPy array
+    x_test = np.array([x_test])
+
+    # Predict and display the result
+    pred = model.predict(x_test)
+    pred = np.argmax(pred[0])
+    print("pred ", test_words, "\n=", index_to_word.get(pred), "\n\n")
