@@ -1,0 +1,74 @@
+import matplotlib.pyplot as plt
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras import datasets,layers,models
+
+
+(train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+train_images, test_images = train_images / 255.0, test_images / 255.0
+
+
+class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 
+               'dog', 'frog', 'horse', 'ship', 'truck']
+
+plt.figure(figsize=(10, 5))
+for i in range(10):
+    index = np.where(train_labels == i)[0][0]  # Find the first image of each class
+    plt.subplot(2, 5, i+1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.grid(False)
+    plt.imshow(train_images[index])
+    plt.xlabel(class_names[i])
+plt.show()
+
+
+
+model = models.Sequential()
+model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.Flatten())
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(10))
+
+
+model.summary()
+
+
+model.compile(optimizer = 'adam', loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True), metrics = (['accuracy']))
+h = model.fit(train_images, train_labels, epochs=2, validation_data=(test_images, test_labels))
+
+
+test_loss, test_accuracy = model.evaluate(test_images, test_labels, verbose=2)
+print(f"Test accuracy: {test_accuracy * 100:.2f}%")
+print(f"Test loss: {test_loss:.4f}")
+
+
+import matplotlib.pyplot as plt
+if 'accuracy' in h.history and 'val_accuracy' in h.history:
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(h.history['accuracy'], label='Training Accuracy', marker='o')
+    plt.plot(h.history['val_accuracy'], label='Validation Accuracy', marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title('Training and Validation Accuracy')
+    plt.legend()
+    plt.subplot(1, 2, 2)
+    plt.plot(h.history['loss'], label='Training Loss', marker='o')
+    plt.plot(h.history['val_loss'], label='Validation Loss', marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+else:
+    print("The history object does not contain accuracy and loss information.")
+
+
+
+
