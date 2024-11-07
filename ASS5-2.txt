@@ -72,6 +72,11 @@ history = model.fit(X, Y, epochs=100, batch_size=32)
 embeddings = model.get_weights()[0]
 
 
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+reduced_embeddings = pca.fit_transform(embeddings)
+
+
 import matplotlib.pyplot as plt
 plt.scatter(reduced_embeddings[:, 0], reduced_embeddings[:, 1])
 for i, word in enumerate(index_to_word.values()):
